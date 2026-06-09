@@ -1,108 +1,84 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: >-
-  event-manager-api
+Description: event-manager-api
+
 Transform:
-- AWS::Serverless-2016-10-31
+  - AWS::Serverless-2016-10-31
 
-# Resources declares the AWS resources that you want to include in the stack
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-
-  # This is a Lambda function config associated with the source code: get-all-items.js
-  getAllItemsFunction:
+  getEventsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/get-all-items.getAllItemsHandler
-      Runtime: nodejs20.x
+      Handler: src/handlers/get-events.getEventsHandler
+      Runtime: nodejs24.x
       Architectures:
-      - x86_64
+        - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A simple example includes a HTTP get method to get all items 
-        from a DynamoDB table.
+      Description: Get all events from DynamoDB.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
-      - DynamoDBCrudPolicy:
-          TableName: !Ref SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: !Ref SampleTable
+          EVENTS_TABLE: !Ref EventsTable
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /
+            Path: /events
             Method: GET
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
-  # This is a Lambda function config associated with the source code: get-by-id.js
   getByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: src/handlers/get-by-id.getByIdHandler
-      Runtime: nodejs20.x
+      Runtime: nodejs24.x
       Architectures:
-      - x86_64
+        - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A simple example includes a HTTP get method to get one item 
-        by id from a DynamoDB table.
+      Description: Get one event by eventId from DynamoDB.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
-      - DynamoDBCrudPolicy:
-          TableName: !Ref SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: !Ref SampleTable
+          EVENTS_TABLE: !Ref EventsTable
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /{id}
+            Path: /events/{id}
             Method: GET
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
-  # This is a Lambda function config associated with the source code: put-item.js
-  putItemFunction:
+  createEventFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/handlers/put-item.putItemHandler
-      Runtime: nodejs20.x
+      Handler: src/handlers/create-event.createEventHandler
+      Runtime: nodejs24.x
       Architectures:
-      - x86_64
+        - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A simple example includes a HTTP post method to add one item 
-        to a DynamoDB table.
+      Description: Create a new event in DynamoDB.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
-      - DynamoDBCrudPolicy:
-          TableName: !Ref SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: !Ref SampleTable
+          EVENTS_TABLE: !Ref EventsTable
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /
+            Path: /events
             Method: POST
-  # Simple syntax to create a DynamoDB table with a single attribute primary key, more in
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlesssimpletable
 
-  # DynamoDB table to store item: {id: &lt;ID&gt;, name: &lt;NAME&gt;}
-  SampleTable:
+  EventsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
       PrimaryKey:
-        Name: id
+        Name: eventId
         Type: String
       ProvisionedThroughput:
         ReadCapacityUnits: 2
@@ -112,7 +88,7 @@ Outputs:
   WebEndpoint:
     Description: API Gateway endpoint URL for Prod stage
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/"
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+
 Globals:
   Function:
     LoggingConfig:
