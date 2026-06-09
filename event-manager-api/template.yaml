@@ -97,6 +97,29 @@ Resources:
             Path: /events/{id}
             Method: PUT
 
+  deleteEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/delete-event.deleteEventHandler
+      Runtime: nodejs24.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Delete an event from DynamoDB.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+      Environment:
+        Variables:
+          EVENTS_TABLE: !Ref EventsTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /events/{id}
+            Method: DELETE
+
   EventsTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
